@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aaryav's Hangman — Choose Your Fate</title>
+<link rel="shortcut icon" href="https://img.icons8.com/?size=100&id=Btd0TYPtg2iW&format=png&color=000000" type="image/x-icon">
+<link rel="stylesheet" href="hangman.css">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ── LANDING-PAGE-ONLY STYLES ─────────────────────────────────────────────── */
+
+  body {
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  /* Animated blinking cursor after title */
+  .cursor {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background: var(--paper);
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── MAIN CARD ── */
+  .landing-card {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--gallows);
+    padding: 40px 48px 36px;
+    max-width: 540px;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    animation: slideUp 0.45s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes slideUp {
+    from { opacity:0; transform: translateY(28px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .card-stamp {
+    position: absolute;
+    top: 10px; left: 14px;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* decorative corner dots */
+  .landing-card::before,
+  .landing-card::after {
+    content: '✦';
+    position: absolute;
+    color: var(--muted);
+    font-size: 0.7rem;
+    opacity: 0.5;
+  }
+  .landing-card::before { bottom: 10px; left: 14px; }
+  .landing-card::after  { bottom: 10px; right: 14px; }
+
+  /* ── MINI GALLOWS SVG ── */
+  .mini-gallows {
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+
+  /* ── TITLE INSIDE CARD ── */
+  .card-title {
+    font-family: 'Special Elite', serif;
+    color: var(--ink);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-bottom: 4px;
+    text-shadow: none;
+  }
+
+  .card-subtitle {
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    border: none;
+    border-top: 2px dashed var(--muted);
+    opacity: 0.35;
+    margin: 0 0 28px 0;
+  }
+
+  /* ── CHOOSE LEVEL LABEL ── */
+  .choose-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+
+  /* ── LEVEL BUTTONS ── */
+  .level-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .level-btn {
+    font-family: 'Special Elite', serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    border: 3px solid var(--ink);
+    padding: 14px 28px;
+    cursor: pointer;
+    box-shadow: 5px 5px 0 var(--gallows);
+    transition: transform 0.08s, box-shadow 0.08s, background 0.08s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left label */
+  .level-btn .btn-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .level-btn .btn-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .level-btn .btn-name {
+    font-size: 1.1rem;
+  }
+
+  /* Right meta */
+  .level-btn .btn-meta {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+  }
+
+  /* Hover / active */
+  .level-btn:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 8px 8px 0 var(--gallows);
+  }
+  .level-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--gallows);
+  }
+
+  /* ── EASY ── */
+  .level-btn.easy {
+    background: var(--key-right);
+    color: var(--paper);
+    border-color: #1b5e20;
+    box-shadow: 5px 5px 0 #0a3d10;
+  }
+  .level-btn.easy:hover  { box-shadow: 8px 8px 0 #0a3d10; }
+  .level-btn.easy:active { box-shadow: 2px 2px 0 #0a3d10; }
+
+  /* ── MEDIUM ── */
+  .level-btn.medium {
+    background: #e07b00;
+    color: var(--paper);
+    border-color: #7a4200;
+    box-shadow: 5px 5px 0 #4a2800;
+  }
+  .level-btn.medium:hover  { box-shadow: 8px 8px 0 #4a2800; }
+  .level-btn.medium:active { box-shadow: 2px 2px 0 #4a2800; }
+
+  /* ── HARD ── */
+  .level-btn.hard {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: #6e0000;
+    box-shadow: 5px 5px 0 #3d0000;
+  }
+  .level-btn.hard:hover  { box-shadow: 8px 8px 0 #3d0000; }
+  .level-btn.hard:active { box-shadow: 2px 2px 0 #3d0000; }
+
+  /* ── TOPIC TICKER ── */
+  .ticker-wrap {
+    width: 100%;
+    margin-top: 28px;
+    border-top: 2px dashed var(--muted);
+    padding-top: 14px;
+    overflow: hidden;
+  }
+
+  .ticker-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .ticker {
+    display: flex;
+    gap: 18px;
+    animation: scroll 22s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+
+  .ticker-item {
+    font-size: 0.65rem;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--key-bg);
+    border: 1.5px solid var(--key-border);
+    padding: 2px 9px;
+    flex-shrink: 0;
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── FOOTER NOTE ── */
+  .footer-note {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 32px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="landing-card">
+  <span class="card-stamp">Case Intake Form #001</span>
+
+  <!-- Mini gallows decoration -->
+  <svg class="mini-gallows" width="90" height="110" viewBox="0 0 90 110">
+    <line x1="10" y1="105" x2="80" y2="105" stroke="#5c3d1e" stroke-width="5" stroke-linecap="round"/>
+    <line x1="28" y1="105" x2="28" y2="10"  stroke="#5c3d1e" stroke-width="5" stroke-linecap="round"/>
+    <line x1="28" y1="10"  x2="62" y2="10"  stroke="#5c3d1e" stroke-width="5" stroke-linecap="round"/>
+    <line x1="62" y1="10"  x2="62" y2="26"  stroke="#8b6914" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="28" y1="26"  x2="46" y2="10"  stroke="#5c3d1e" stroke-width="3" stroke-linecap="round"/>
+    <!-- hanged figure (always shown on menu) -->
+    <circle cx="62" cy="36" r="9" stroke="#2c1810" stroke-width="2.5" fill="none"/>
+    <line x1="62" y1="45" x2="62" y2="76" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="62" y1="55" x2="48" y2="67" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="62" y1="55" x2="76" y2="67" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="62" y1="76" x2="50" y2="95" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="62" y1="76" x2="74" y2="95" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- X eyes -->
+    <line x1="57" y1="31" x2="60" y2="34" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+    <line x1="60" y1="31" x2="57" y2="34" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+    <line x1="64" y1="31" x2="67" y2="34" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+    <line x1="67" y1="31" x2="64" y2="34" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+    <!-- sad mouth -->
+    <path d="M58 40 Q62 37 66 40" stroke="#c0392b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>
+
+  <h2 class="card-title">Aaryav's HANGMAN<span class="cursor"></span></h2>
+  <p class="card-subtitle">A classic word guessing game</p>
+
+  <hr class="divider">
+
+  <p class="choose-label">Select your difficulty to begin</p>
+
+  <div class="level-buttons">
+
+    <button class="level-btn easy" onclick="goToGame('easy')">
+      <span class="btn-label">
+        <span class="btn-icon">🟢</span>
+        <span class="btn-name">Easy</span>
+      </span>
+      <span class="btn-meta">Short words · Clear hints</span>
+    </button>
+
+    <button class="level-btn medium" onclick="goToGame('medium')">
+      <span class="btn-label">
+        <span class="btn-icon">🟠</span>
+        <span class="btn-name">Medium</span>
+      </span>
+      <span class="btn-meta">Longer words · Trickier hints</span>
+    </button>
+
+    <button class="level-btn hard" onclick="goToGame('hard')">
+      <span class="btn-label">
+        <span class="btn-icon">🔴</span>
+        <span class="btn-name">Hard</span>
+      </span>
+      <span class="btn-meta">Obscure words · Good luck</span>
+    </button>
+
+  </div>
+
+  <!-- Scrolling topic ticker -->
+  <div class="ticker-wrap">
+    <p class="ticker-label">Topics in play</p>
+    <div class="ticker">
+      <span class="ticker-item">Animals</span>
+      <span class="ticker-item">Vegetables</span>
+      <span class="ticker-item">Objects</span>
+      <span class="ticker-item">Verbs</span>
+      <span class="ticker-item">Celebrities</span>
+      <span class="ticker-item">Memes</span>
+      <span class="ticker-item">Characters</span>
+      <span class="ticker-item">Insects</span>
+      <span class="ticker-item">Foods</span>
+      <span class="ticker-item">Sports</span>
+      <span class="ticker-item">Mythology</span>
+      <span class="ticker-item">Body Parts</span>
+      <span class="ticker-item">Brain Rot</span>
+      <span class="ticker-item">Countries</span>
+      <span class="ticker-item">Common Games</span>
+      <!-- duplicate for seamless loop -->
+      <span class="ticker-item">Animals</span>
+      <span class="ticker-item">Vegetables</span>
+      <span class="ticker-item">Objects</span>
+      <span class="ticker-item">Verbs</span>
+      <span class="ticker-item">Celebrities</span>
+      <span class="ticker-item">Memes</span>
+      <span class="ticker-item">Characters</span>
+      <span class="ticker-item">Insects</span>
+      <span class="ticker-item">Foods</span>
+      <span class="ticker-item">Sports</span>
+      <span class="ticker-item">Mythology</span>
+      <span class="ticker-item">Body Parts</span>
+      <span class="ticker-item">Brain Rot</span>
+      <span class="ticker-item">Countries</span>
+      <span class="ticker-item">Common Games</span>
+    </div>
+  </div>
+</div>
+
+<p class="footer-note">7 lives · 450 words · 15 topics · 3 difficulty levels</p>
+
+<script>
+  function typesound(){
+    const type = new Audio('lightningbulb-spacebar-click-keyboard-199448.mp3');
+    type.play();
+  }
+
+  function goToGame(difficulty) {
+    localStorage.setItem('difficulty', difficulty);
+    typesound();
+    setTimeout(() => {
+      window.location.href = 'index1.html';
+    }, 200);
+  }
+</script>
+</body>
+</html>
